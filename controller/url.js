@@ -9,18 +9,24 @@ async function handleGenerateNewShortURL(req, resp) {
     await URL.create({
         shortId: shortID,
         redirectURL: body.url,
-        visitHistory: []
+        visitHistory: [],
+        createdBy: req.user._id
     });
-    return resp.render('home', { id: shortID })
+    return resp.render('home', { id: shortID, user: req.user })
 }
 
-async function handleGetAnalytics(req,resp) {
+async function handleGetAnalytics(req, resp) {
     const shortId = req.params.shortId;
-    const result = await URL.findOne({ shortId })
+    const result = await URL.findOne({ shortId, createdBy: req.user._id })
+    
+    if (!result) {
+        return resp.status(404).json({ err: 'URL not found or access denied' })
+    }
+    
     return resp.json(
         {
-            totalClicks : result.visitHistory.length,
-            analytics : result.visitHistory
+            totalClicks: result.visitHistory.length,
+            analytics: result.visitHistory
         }
     )
 
