@@ -5,11 +5,13 @@ const { setUser } = require("../service/auth");
 
 async function handleUserSignup(req, res) {
     const { name, email, password } = req.body;
-    await User.create({
+    const user = await User.create({
         name,
         email,
         password
     })
+    const token = setUser(user)
+    res.cookie('token', token)
     return res.redirect('/')
 }
 async function handleUserLogin(req, res) {
@@ -21,9 +23,10 @@ async function handleUserLogin(req, res) {
     if (!user) return res.render('login', {
         err: 'invalid username or password'
     });
-    const sessionId = uuidv4()
-    setUser(sessionId, user)
-    res.cookie('uid',sessionId)
+
+    const token = setUser(user)
+    res.clearCookie('token')
+    res.cookie('token', token)
     return res.redirect('/')
 }
 

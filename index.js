@@ -9,7 +9,7 @@ const urlRoutes = require('./routers/url.js');
 const staticRoute = require('./routers/staticRouter.js')
 const userRoute = require('./routers/user.js');
 
-const { restrictToLoginUserOnly, checkAuth } = require('./middleware/auth.js');
+const { checkForAuthentication , restrictTo } = require('./middleware/auth.js');
 
 const app = express();
 const PORT = 8001;
@@ -24,10 +24,11 @@ app.set('views', path.resolve('./views'))
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
+app.use(checkForAuthentication)
 
-app.use('/url', restrictToLoginUserOnly, urlRoutes);
+app.use('/url', restrictTo(['USER','ADMIN']), urlRoutes);
 app.use('/user', userRoute);
-app.use('/',checkAuth , staticRoute);
+app.use('/', staticRoute);
 
 
 app.get('/:shortId', async (req, res) => {
